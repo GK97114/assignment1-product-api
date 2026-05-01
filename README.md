@@ -163,8 +163,7 @@ Automated testing via **GitHub Actions**:
 2. Setup Node.js (18.x, 20.x)
 3. Install dependencies (both services)
 4. Run tests with coverage
-5. Upload coverage to Codecov
-6. Comment on PRs with results
+5. Upload coverage to json
 
 See [.github/CI-CD.md](.github/CI-CD.md) for complete details.
 
