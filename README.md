@@ -242,7 +242,7 @@ curl -X DELETE http://localhost:3002/api/products/1
 - [x] Implement full CRUD endpoints
 - [x] Create comprehensive test suite (80%+ coverage)
 - [x] Setup GitHub Actions CI/CD pipeline
-- [x] Add coverage reporting to Codecov
+- [x] Have code coverage reports be created in a JSON report
 
 ## Commit Types
 
