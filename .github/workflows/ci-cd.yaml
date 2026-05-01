@@ -38,7 +38,7 @@ jobs:
       - name: Run Catalog Service tests
         run: |
           cd catalog-service
-          npm test -- --coverage
+          npm test -- --json --outputFile=test-results.json --coverage
 
       # Step 5: Install dependencies for Management Service
       - name: Install Management Service dependencies
@@ -50,25 +50,41 @@ jobs:
       - name: Run Management Service tests
         run: |
           cd management-service
-          npm test -- --coverage
+          npm test -- --json --outputFile=test-results.json --coverage
 
-      # Step 7: Upload coverage reports (Catalog Service)
-      - name: Upload Catalog Service coverage to Codecov
-        uses: codecov/codecov-action@v3
+      # Step 7: Upload test results (Catalog Service)
+      - name: Upload Catalog Service test results
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          file: ./catalog-service/coverage/coverage-final.json
-          flags: catalog-service
+          name: catalog-service-test-results
+          path: catalog-service/test-results.json
+
+      # Step 8: Upload test results (Management Service)
+      - name: Upload Management Service test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: management-service-test-results
+          path: management-service/test-results.json
+
+      # Step 9: Upload coverage reports (Catalog Service)
+      - name: Upload Catalog Service coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
           name: catalog-service-coverage
+          path: catalog-service/coverage/
 
-      # Step 8: Upload coverage reports (Management Service)
-      - name: Upload Management Service coverage to Codecov
-        uses: codecov/codecov-action@v3
+      # Step 10: Upload coverage reports (Management Service)
+      - name: Upload Management Service coverage
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          file: ./management-service/coverage/coverage-final.json
-          flags: management-service
           name: management-service-coverage
+          path: management-service/coverage/
 
-      # Step 9: Comment on PR with test results (optional)
+      # Step 11: Comment on PR with test results (optional)
       - name: Comment PR with test results
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
@@ -78,5 +94,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '✅ CI/CD Pipeline passed! Tests completed successfully for both Catalog and Management services.'
+              body: '✅ CI/CD Pipeline passed! Tests completed successfully for both Catalog and Management services.\n\nTest results are available in the [Artifacts](https://github.com/' + context.repo.owner + '/' + context.repo.repo + '/actions/runs/' + context.runId + ') section.'
             })

@@ -25,30 +25,35 @@ The pipeline runs on:
    ```bash
    cd catalog-service
    npm install
-   npm test -- --coverage
+   npm test -- --json --outputFile=test-results.json --coverage
    ```
    - Installs dependencies
    - Runs all tests
+   - Outputs results as JSON (test-results.json)
    - Generates coverage report
 
 ### 4. **Install & Test Management Service**
    ```bash
    cd management-service
    npm install
-   npm test -- --coverage
+   npm test -- --json --outputFile=test-results.json --coverage
    ```
    - Installs dependencies
    - Runs all tests
+   - Outputs results as JSON (test-results.json)
    - Generates coverage report
 
-### 5. **Upload Coverage Reports**
-   - Uploads test coverage to **Codecov**
-   - Helps track code coverage over time
-   - Creates visual reports on each commit
+### 5. **Upload Artifacts**
+   - **Test Results** (JSON files)
+     - Catalog Service: `catalog-service-test-results`
+     - Management Service: `management-service-test-results`
+   - **Coverage Reports** (directories)
+     - Catalog Service: `catalog-service-coverage`
+     - Management Service: `management-service-coverage`
 
 ### 6. **PR Comments**
    - Comments on pull requests with test status
-   - ✅ Passes or ❌ Fails
+   - Includes link to artifacts with results
 
 ## How to Use
 
@@ -74,17 +79,24 @@ Then create a PR on GitHub → Pipeline runs automatically
 ### GitHub Actions Tab
 1. Go to your repository on GitHub
 2. Click **Actions** tab
-3. See workflow runs and logs
+3. Click on a workflow run to see details
+
+### Test Artifacts
+Each successful workflow run uploads test artifacts:
+- **Catalog Service**
+  - `catalog-service-test-results` - JSON test results
+  - `catalog-service-coverage/` - Coverage report
+- **Management Service**
+  - `management-service-test-results` - JSON test results
+  - `management-service-coverage/` - Coverage report
+
+Download artifacts by clicking on them in the workflow run details.
 
 ### Pull Request
 - Click the **Checks** tab on your PR
 - See real-time test status
-- Click **Details** to view full logs
-
-### Coverage Reports
-- Go to **[Codecov.io](https://codecov.io)**
-- Connect your GitHub account
-- See coverage trends and reports
+- Workflow comments with link to artifacts
+- Click artifact link to download test results
 
 ## Configuration
 
@@ -110,14 +122,7 @@ coverageThreshold: {
 }
 ```
 
-If coverage falls below 80%, tests will fail.
-
-### Codecov (Optional)
-If you want to track coverage over time:
-1. Go to **[Codecov.io](https://codecov.io)**
-2. Sign in with GitHub
-3. Enable your repository
-4. Coverage reports will auto-upload on each push
+If coverage falls below 80%, tests will fail. Coverage reports are uploaded as artifacts and can be downloaded from the Actions tab.
 
 ## Troubleshooting
 
