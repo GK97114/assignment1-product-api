@@ -72,6 +72,9 @@ POST Create Product: POST /api/products
 - [x] Recreate Schema
 - [x] Make app environment-aware
 - [x] Handle connection behavior
+- [x] Create catalog-service folder
+- [x] Create management-service folder
+- [x] Copy logic from backend into new services with relevant logic
 
 ## Commit Types Documentation
 - I will follow Conventional Commits syntax; <type>(optional scope): <short description>
