@@ -1,0 +1,82 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Setup Node.js
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      # Step 3: Install dependencies for Catalog Service
+      - name: Install Catalog Service dependencies
+        run: |
+          cd catalog-service
+          npm install
+
+      # Step 4: Run tests for Catalog Service
+      - name: Run Catalog Service tests
+        run: |
+          cd catalog-service
+          npm test -- --coverage
+
+      # Step 5: Install dependencies for Management Service
+      - name: Install Management Service dependencies
+        run: |
+          cd management-service
+          npm install
+
+      # Step 6: Run tests for Management Service
+      - name: Run Management Service tests
+        run: |
+          cd management-service
+          npm test -- --coverage
+
+      # Step 7: Upload coverage reports (Catalog Service)
+      - name: Upload Catalog Service coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./catalog-service/coverage/coverage-final.json
+          flags: catalog-service
+          name: catalog-service-coverage
+
+      # Step 8: Upload coverage reports (Management Service)
+      - name: Upload Management Service coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./management-service/coverage/coverage-final.json
+          flags: management-service
+          name: management-service-coverage
+
+      # Step 9: Comment on PR with test results (optional)
+      - name: Comment PR with test results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '✅ CI/CD Pipeline passed! Tests completed successfully for both Catalog and Management services.'
+            })

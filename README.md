@@ -1,87 +1,273 @@
-# Product API
+# Product API - Microservices
 
-A simple RESTful API built with Node.js, Express, and SQLite for managing product data.
+A Node.js, Express-based microservices architecture for product management with separate **Catalog** and **Management** services.
 
-This project demonstrates basic backend development concepts including routing, data persistence, and CRUD operations using a lightweight database.
+## Architecture
 
-## Features
+This project implements a **microservices** pattern with two independent services:
 
-- Root endpoint with welcome message
-- Create a product
-- Retrieve all stored products
-- SQLite database for persistence
-- JSON request and response handling
+### **Catalog Service** (Read-Only)
+- Port: `3001`
+- Handles product queries and retrieval
+- Endpoints:
+  - `GET /api/catalog` - Get all products
+  - `GET /api/catalog/:id` - Get product by ID
+
+### **Management Service** (Write Operations)
+- Port: `3002`
+- Handles product creation, updates, and deletion
+- Endpoints:
+  - `POST /api/products` - Create product
+  - `PUT /api/products/:id` - Update product
+  - `DELETE /api/products/:id` - Delete product
+
+## Project Structure
+
+```
+assignment1-product-api/
+│
+├── .github/
+│   └── workflows/
+│       └── ci-cd.yaml          # GitHub Actions CI/CD pipeline
+│
+├── catalog-service/             # Read-only service (Port 3001)
+│   ├── __tests__/               # Jest test suite
+│   ├── controller/
+│   ├── routes/
+│   ├── db/
+│   ├── index.js
+│   ├── package.json
+│   ├── .env
+│   ├── jest.config.js
+│   └── TESTING.md
+│
+├── management-service/          # Write operations service (Port 3002)
+│   ├── __tests__/               # Jest test suite
+│   ├── controller/
+│   ├── routes/
+│   ├── db/
+│   ├── index.js
+│   ├── package.json
+│   ├── .env
+│   ├── jest.config.js
+│   └── TESTING.md
+│
+├── .github/CI-CD.md             # CI/CD documentation
+└── README.md                    # This file
+```
 
 ## Product Schema
 
 Each product contains:
-
-- `id` - Auto-generated integer
-- `name` - String
-- `price` - Number
-
-## Folder Architecture
-
-```
-backend/
-│
-├── controllers/
-│   └── productController.js
-├── db/
-│   └── database.js
-├── routes/
-│   └── productRoutes.js
-├── index.js
-├── products.db
-├── package.json
-└── README.md
-```
+- `id` - Auto-generated integer (primary key)
+- `name` - String (required, non-empty)
+- `price` - Number (required, non-negative)
 
 ## Technology Stack
 
-- Node.js
-- Express
-- SQLite (better-sqlite3)
-- Railway for deployment
+- **Runtime:** Node.js 18.x / 20.x
+- **Framework:** Express.js
+- **Database:** PostgreSQL
+- **Testing:** Jest + Supertest
+- **CI/CD:** GitHub Actions
+- **Deployment:** Railway / Cloud Platform
 
-## API Endpoints
+## Setup Instructions
 
-URL: https://cloud-computing-practice-a1-production.up.railway.app
+### Prerequisites
+- Node.js 18.x or 20.x
+- PostgreSQL database
+- npm
 
-GET All products: GET /api/products
+### 1. Clone Repository
+```bash
+git clone <repo-url>
+cd assignment1-product-api
+```
 
-POST Create Product: POST /api/products
-- Content-Type: application/json
-- Price must be a # not a string
-- follow json format = {"name": "nameOfProduct", "price": ###.### (Real #)}
+### 2. Setup Catalog Service
+```bash
+cd catalog-service
+npm install
+# Update .env with your DATABASE_URL
+npm run dev  # Runs on port 3001
+```
+
+### 3. Setup Management Service
+```bash
+cd management-service
+npm install
+# Update .env with your DATABASE_URL
+npm run dev  # Runs on port 3002
+```
+
+## Environment Variables
+
+Both services require a `.env` file:
+
+```env
+NODE_ENV=development
+PORT=3001              # 3002 for management-service
+DATABASE_URL=postgresql://user:password@localhost:5432/product_db
+RAILWAY_REPLICA_ID=replica-1
+```
+
+## Database Setup
+
+### PostgreSQL Schema
+
+```sql
+CREATE TABLE products (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  price NUMERIC(10, 2) NOT NULL
+);
+```
+
+## Testing
+
+### Run Tests Locally
+
+**Catalog Service:**
+```bash
+cd catalog-service
+npm test              # Run all tests
+npm run test:watch    # Watch mode
+npm run test:coverage # Coverage report
+```
+
+**Management Service:**
+```bash
+cd management-service
+npm test              # Run all tests
+npm run test:watch    # Watch mode
+npm run test:coverage # Coverage report
+```
+
+### Coverage Target
+- **80%+** across all metrics (branches, functions, lines, statements)
+- **Framework:** Jest with Supertest for HTTP testing
+
+See [catalog-service/TESTING.md](catalog-service/TESTING.md) for detailed documentation.
+
+## CI/CD Pipeline
+
+Automated testing via **GitHub Actions**:
+
+### Triggers
+- ✅ Every push to `main` branch
+- ✅ Every pull request to `main`
+
+### Pipeline Steps
+1. Checkout repository
+2. Setup Node.js (18.x, 20.x)
+3. Install dependencies (both services)
+4. Run tests with coverage
+5. Upload coverage to Codecov
+6. Comment on PRs with results
+
+See [.github/CI-CD.md](.github/CI-CD.md) for complete details.
+
+## API Examples
+
+### Catalog Service
+
+**Get all products:**
+```bash
+curl http://localhost:3001/api/catalog
+```
+
+**Get product by ID:**
+```bash
+curl http://localhost:3001/api/catalog/1
+```
+
+### Management Service
+
+**Create product:**
+```bash
+curl -X POST http://localhost:3002/api/products \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Laptop", "price": 999.99}'
+```
+
+**Update product:**
+```bash
+curl -X PUT http://localhost:3002/api/products/1 \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Updated Laptop", "price": 1099.99}'
+```
+
+**Delete product:**
+```bash
+curl -X DELETE http://localhost:3002/api/products/1
+```
+
+## Development Workflow
+
+1. **Create feature branch**
+   ```bash
+   git checkout -b feature/new-feature
+   ```
+
+2. **Make changes and test locally**
+   ```bash
+   npm test
+   ```
+
+3. **Push to GitHub**
+   ```bash
+   git push origin feature/new-feature
+   ```
+
+4. **Create Pull Request**
+   - CI/CD pipeline runs automatically
+   - All tests must pass before merging
+
+5. **Merge to Main** when approved
+
+## Microservices Benefits
+
+✅ **Separation of Concerns** - Read and write operations isolated  
+✅ **Independent Scaling** - Each service scales independently  
+✅ **Technology Flexibility** - Can use different tech per service  
+✅ **Easier Testing** - Services tested in isolation  
+✅ **Fault Isolation** - Service failures don't cascade  
 
 ## Production Workflow
 
 - [x] Initialize project with npm
-- [x] Install Express and SQLite dependencies
-- [x] Create database connection and table schema
-- [x] Implement root endpoint
-- [x] Implement product creation endpoint
-- [x] Implement product retrieval endpoint
-- [x] Test locally
-- [x] Push to GitHub
-- [x] Deploy to Railway
-- [x] Remove SQLite
-- [x] Introduce PostGreSQL connection layer
-- [x] Convert controller to Async + PostgreSQL
-- [x] Recreate Schema
-- [x] Make app environment-aware
-- [x] Handle connection behavior
-- [x] Create catalog-service folder
-- [x] Create management-service folder
-- [x] Copy logic from backend into new services with relevant logic
+- [x] Setup Express and PostgreSQL
+- [x] Create Catalog Service (read-only)
+- [x] Create Management Service (write operations)
+- [x] Implement full CRUD endpoints
+- [x] Create comprehensive test suite (80%+ coverage)
+- [x] Setup GitHub Actions CI/CD pipeline
+- [x] Add coverage reporting to Codecov
 
-## Commit Types Documentation
-- I will follow Conventional Commits syntax; <type>(optional scope): <short description>
-- feat = New Feature/Functionality
-- fix = Bug fix
-- chore = Non-feture changes (build, tooling)
-- docs = documentation changes
-- style = formatting
-- refactor = code restructuring without changing behavior
-- test = add or update tests
+## Commit Types
+
+Following Conventional Commits syntax:
+- `feat` - New feature/functionality
+- `fix` - Bug fix
+- `chore` - Non-feature changes (build, tooling)
+- `docs` - Documentation changes
+- `style` - Formatting changes
+- `refactor` - Code restructuring without behavior change
+- `test` - Add or update tests
+
+## Resources
+
+- [Express.js Docs](https://expressjs.com/)
+- [Jest Testing](https://jestjs.io/)
+- [PostgreSQL](https://www.postgresql.org/)
+- [GitHub Actions](https://docs.github.com/en/actions)
+- [Microservices Architecture](https://microservices.io/)
+
+## License
+
+ISC
+
+## Author
+
+Created as part of SDEV3355 Cloud Computing course.
